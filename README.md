@@ -89,3 +89,23 @@ En repassant les tests, on s'apperçoit que quelque-chose manque:
         at util.PhantomJsTest.getDefaultDriver(PhantomJsTest.java:19)
         at org.fluentlenium.adapter.FluentTest.initFluentFromDefaultDriver(FluentTest.java:123)
 Il manque l'éxécutable de PhantomJS. Il faut le télécharger !
+Autant s'outiller tout de suite, utilisons du code provenant d'un [gist|https://gist.github.com/dgageot/4957186] pour
+ça et intégrons-le dans la classe PhantomJsTest:
+    public WebDriver getDefaultDriver() {
+        File phantomJsExe = new PhantomJsDownloader().downloadAndExtract();
+        DesiredCapabilities capabilities = new DesiredCapabilities(of(PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
+                phantomJsExe.getAbsolutePath()));
+        WebDriver driver = new PhantomJSDriver(capabilities);
+        driver.manage().window().setSize(DEFAULT_WINDOW_SIZE);
+        return driver;
+    }
+step-5
+Ça passe et on ne voit plus de firefox qui démarre l'interface lors du passage des tests !
+En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
+    public PhantomJsTest() {
+        setSnapshotMode(Mode.TAKE_SNAPSHOT_ON_FAIL);
+        setSnapshotPath(new File("target", "snapshots").getAbsolutePath());
+    }
+step-6
+Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire le scénario soit-même dans son
+navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
