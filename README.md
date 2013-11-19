@@ -5,29 +5,35 @@ Yet Another Java Web Stack
 
 Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article, je développe un site qui
 permet de voir le résultat d'un kata bien connu, le
-[kata anagram|http://codekata.pragprog.com/2007/01/kata_six_anagra.html]
+[kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
 
 ## Architecture cible
+
 * Partie cliente "statique"
-** AngularJS
-** Yeoman (scafolding)
-** Bower (dépendences)
+   * AngularJS
+   * Yeoman (scafolding)
+   * Bower (dépendences)
 
 * Partie serveur "dynamique"
-** Java Jersey
+   * Java Jersey
 
 ## Testons un site web
-On commence par écrire un test qui se connecte à un serveur web et vérifie qu'on affiche le titre de la page: anagram
-kata. Pour ça, j'utilise le framework [FluentLenium|http://www.fluentlenium.org/] qui repose sur
-[Selenium|http://docs.seleniumhq.org/].
 
-Step 1
-Tests: mvn clean install
-Résultat: Failed tests:   title_of_site_should_contain_the_kata_name(ui.AnagramKataPageTest): <'Erreur de chargement de la page'> should contain the String:<'Anagram Kata'>
+On commence par écrire un test qui se connecte à un serveur web et vérifie qu'on affiche le titre de la page: `anagram
+kata`. Pour ça, j'utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur
+[Selenium](http://docs.seleniumhq.org/)
 
-C'est normal puisque aucun serveur n'est démarré sur localhost:8080. Pour faire passer le test, il faut donc déployer
+### Step 1
+
+Tests: `mvn clean install`
+
+Résultat: `Failed tests:   title_of_site_should_contain_the_kata_name(ui.AnagramKataPageTest): <'Erreur de chargement de la page'> should contain the String:<'Anagram Kata'>`
+
+C'est normal puisque aucun serveur n'est démarré sur `localhost:8080`. Pour faire passer le test, il faut donc déployer
 un serveur web et servir une page dont le titre est 'Anagram kata'.
+
 Une JUnit Rule démarre le serveur Jetty embarqué pour servir du contenu statique :
+
     package util;
 
     import org.eclipse.jetty.server.Server;
@@ -56,14 +62,24 @@ Une JUnit Rule démarre le serveur Jetty embarqué pour servir du contenu statiq
             }
         }
     }
+
 On ajoute la rule au test :
+
     @Rule
     public JettyServerRule server = new JettyServerRule();
+
 Le message d'erreur change :
-Step-2
-    java.lang.AssertionError: <'Directory: /'> should contain the String:<'Anagram Kata'>
-Le serveur Jetty embarqué se met donc à servir le contenu statique de '/src/main/webapp'.
+
+### Step 2
+
+`java.lang.AssertionError: <'Directory: /'> should contain the String:<'Anagram Kata'>`
+
+Le serveur Jetty embarqué se met donc à servir le contenu statique de `/src/main/webapp`.
+
+### Step 3
+
 Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
+
     <html>
     <head>
         <title>Anagram Kata</title>
@@ -73,13 +89,17 @@ Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
 Vous avez peut-être remarqué que le démarrage de Firefox par Selenuim rend le test assez long à éxécuter. Pour
 accélérer le passage du test, nous allons utiliser le navigateur sans interface PhantomJS. C'est ghostdriver qui se
 charge de déclarer PhantomJS comme WebDriver à Selenium.
+
     <dependency>
         <groupId>com.github.detro.ghostdriver</groupId>
         <artifactId>phantomjsdriver</artifactId>
         <version>1.0.3</version>
     </dependency>
-step-4
+
+### Step 4
+
 En repassant les tests, on s'apperçoit que quelque-chose manque:
+
     java.lang.IllegalStateException: The path to the driver executable must be set by the phantomjs.binary.path capability/system property/PATH variable; for more information, see https://github.com/ariya/phantomjs/wiki. The latest version can be downloaded from http://phantomjs.org/download.html
         at com.google.common.base.Preconditions.checkState(Preconditions.java:176)
         at org.openqa.selenium.phantomjs.PhantomJSDriverService.findPhantomJS(PhantomJSDriverService.java:237)
@@ -88,9 +108,12 @@ En repassant les tests, on s'apperçoit que quelque-chose manque:
         at org.openqa.selenium.phantomjs.PhantomJSDriver.<init>(PhantomJSDriver.java:86)
         at util.PhantomJsTest.getDefaultDriver(PhantomJsTest.java:19)
         at org.fluentlenium.adapter.FluentTest.initFluentFromDefaultDriver(FluentTest.java:123)
+
 Il manque l'éxécutable de PhantomJS. Il faut le télécharger !
-Autant s'outiller tout de suite, utilisons du code provenant d'un [gist|https://gist.github.com/dgageot/4957186] pour
+
+Autant s'outiller tout de suite, utilisons du code provenant d'un [gist](https://gist.github.com/dgageot/4957186) pour
 ça et intégrons-le dans la classe PhantomJsTest:
+
     public WebDriver getDefaultDriver() {
         File phantomJsExe = new PhantomJsDownloader().downloadAndExtract();
         DesiredCapabilities capabilities = new DesiredCapabilities(of(PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
@@ -99,13 +122,19 @@ Autant s'outiller tout de suite, utilisons du code provenant d'un [gist|https://
         driver.manage().window().setSize(DEFAULT_WINDOW_SIZE);
         return driver;
     }
-step-5
+
+### Step 5
+
 Ça passe et on ne voit plus de firefox qui démarre l'interface lors du passage des tests !
+
 En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
+
     public PhantomJsTest() {
         setSnapshotMode(Mode.TAKE_SNAPSHOT_ON_FAIL);
         setSnapshotPath(new File("target", "snapshots").getAbsolutePath());
     }
-step-6
+
+### Step 6
+
 Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire le scénario soit-même dans son
 navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
