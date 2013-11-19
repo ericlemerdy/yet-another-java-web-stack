@@ -14,6 +14,11 @@ import static org.openqa.selenium.phantomjs.PhantomJSDriverService.PHANTOMJS_EXE
 public abstract class PhantomJsTest extends FluentTest {
     private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(1024, 768);
 
+    public PhantomJsTest() {
+        setSnapshotMode(Mode.TAKE_SNAPSHOT_ON_FAIL);
+        setSnapshotPath(new File("target", "snapshots").getAbsolutePath());
+    }
+    
     public WebDriver getDefaultDriver() {
         File phantomJsExe = new PhantomJsDownloader().downloadAndExtract();
         DesiredCapabilities capabilities = new DesiredCapabilities(of(PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
