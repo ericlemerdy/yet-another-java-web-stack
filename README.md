@@ -22,7 +22,8 @@ kata. Pour ça, j'utilise le framework [FluentLenium|http://www.fluentlenium.org
 [Selenium|http://docs.seleniumhq.org/].
 
 Step 1
-Résultat: java.lang.AssertionError: <'Erreur de chargement de la page'> should contain the String:<'Anagram Kata'>
+Tests: mvn clean install
+Résultat: Failed tests:   title_of_site_should_contain_the_kata_name(ui.AnagramKataPageTest): <'Erreur de chargement de la page'> should contain the String:<'Anagram Kata'>
 
 C'est normal puisque aucun serveur n'est démarré sur localhost:8080. Pour faire passer le test, il faut donc déployer
 un serveur web et servir une page dont le titre est 'Anagram kata'.
