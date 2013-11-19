@@ -4,10 +4,11 @@ import org.fluentlenium.adapter.FluentTest;
 import org.junit.Rule;
 import org.junit.Test;
 import util.JettyServerRule;
+import util.PhantomJsTest;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-public class AnagramKataPageTest extends FluentTest {
+public class AnagramKataPageTest extends PhantomJsTest {
 
     @Rule
     public JettyServerRule server = new JettyServerRule();

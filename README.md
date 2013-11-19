@@ -69,3 +69,23 @@ Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
         <title>Anagram Kata</title>
     </head>
     </html>
+
+Vous avez peut-être remarqué que le démarrage de Firefox par Selenuim rend le test assez long à éxécuter. Pour
+accélérer le passage du test, nous allons utiliser le navigateur sans interface PhantomJS. C'est ghostdriver qui se
+charge de déclarer PhantomJS comme WebDriver à Selenium.
+    <dependency>
+        <groupId>com.github.detro.ghostdriver</groupId>
+        <artifactId>phantomjsdriver</artifactId>
+        <version>1.0.3</version>
+    </dependency>
+step-4
+En repassant les tests, on s'apperçoit que quelque-chose manque:
+    java.lang.IllegalStateException: The path to the driver executable must be set by the phantomjs.binary.path capability/system property/PATH variable; for more information, see https://github.com/ariya/phantomjs/wiki. The latest version can be downloaded from http://phantomjs.org/download.html
+        at com.google.common.base.Preconditions.checkState(Preconditions.java:176)
+        at org.openqa.selenium.phantomjs.PhantomJSDriverService.findPhantomJS(PhantomJSDriverService.java:237)
+        at org.openqa.selenium.phantomjs.PhantomJSDriverService.createDefaultService(PhantomJSDriverService.java:182)
+        at org.openqa.selenium.phantomjs.PhantomJSDriver.<init>(PhantomJSDriver.java:96)
+        at org.openqa.selenium.phantomjs.PhantomJSDriver.<init>(PhantomJSDriver.java:86)
+        at util.PhantomJsTest.getDefaultDriver(PhantomJsTest.java:19)
+        at org.fluentlenium.adapter.FluentTest.initFluentFromDefaultDriver(FluentTest.java:123)
+Il manque l'éxécutable de PhantomJS. Il faut le télécharger !
