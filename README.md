@@ -23,7 +23,7 @@ On commence par écrire un test qui se connecte à un serveur web et vérifie qu
 kata`. Pour ça, j'utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur
 [Selenium](http://docs.seleniumhq.org/)
 
-### Step 1
+### [`git checkout step-1-fail-ui-test`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-1-fail-ui-test)
 
 Tests: `mvn clean install`
 
@@ -68,15 +68,15 @@ On ajoute la rule au test :
     @Rule
     public JettyServerRule server = new JettyServerRule();
 
-Le message d'erreur change :
+### [`git checkout step-2-start-test-web-server`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-2-start-test-web-server)
 
-### Step 2
+Le message d'erreur change :
 
 `java.lang.AssertionError: <'Directory: /'> should contain the String:<'Anagram Kata'>`
 
 Le serveur Jetty embarqué se met donc à servir le contenu statique de `/src/main/webapp`.
 
-### Step 3
+### [`git checkout step-3-test-pass`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-3-test-pass)
 
 Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
 
@@ -96,7 +96,7 @@ charge de déclarer PhantomJS comme WebDriver à Selenium.
         <version>1.0.3</version>
     </dependency>
 
-### Step 4
+### [`git checkout step-4-using-phantomjs`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-4-using-phantomjs)
 
 En repassant les tests, on s'apperçoit que quelque-chose manque:
 
@@ -123,7 +123,7 @@ Autant s'outiller tout de suite, utilisons du code provenant d'un [gist](https:/
         return driver;
     }
 
-### Step 5
+### [`git checkout step-5-download-phantom-js`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-5-download-phantom-js)
 
 Ça passe et on ne voit plus de firefox qui démarre l'interface lors du passage des tests !
 
@@ -134,7 +134,13 @@ En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
         setSnapshotPath(new File("target", "snapshots").getAbsolutePath());
     }
 
-### Step 6
+### [`git checkout step-6-snapshot-on-error`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-6-snapshot-on-error)
 
 Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire le scénario soit-même dans son
 navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
+
+Ça y est, on a un site qui fonctionne. La prochaine chose à faire est naturellement de mettre le site en production
+pour que les utilisateurs puissent bénéficier de ses fonctionnalités.
+
+## Mise en production
+
