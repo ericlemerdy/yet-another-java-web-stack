@@ -178,7 +178,7 @@ Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire
 navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
 
 Ça y est, on a un site qui fonctionne. La prochaine chose à faire est naturellement de mettre le site en production
-pour que les utilisateurs puissent bénéficier de ses fonctionnalités.
+pour que les utilisateurs puissent bénéficier de ces fonctionnalités incroyables !
 
 ## Mise en production
 
