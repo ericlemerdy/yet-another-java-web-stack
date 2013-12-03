@@ -231,5 +231,32 @@ Notez qu'on se permet de passer Puppet en Verbose pour bien comprendre ce qu'il 
 
 Pour appliquer cette configuration, il faut taper la commande `vagrant provision`. Si tout se passe correctement, vous pouvez accéder à: [http://10.10.10.2:8080/]. Ça doit montrer la page "It works" par défaut de Tomcat.
 
+### [`git checkout step-9-provisionned-with-puppet`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-9-provisionned-with-puppet)
+
 ### Déploiement
 
+Il ne reste plus qu'à déployer ! Pour celà, on pourrait faire compliquer. Pour changer, on va faire simple. On va se contenter de créer un répertoire synchronisé avec la machine virtuelle :
+
+
+`/platform/Vagrantfile`:
+
+    (...)
+    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+      (...)
+      config.vm.synced_folder "webapps/", "/var/lib/tomcat7/webapps/"
+      (...)
+    end
+
+Et copier le livrable dedans:
+
+    cp ~/.m2/repository/name/lemerdy/eric/yet-another-java-web-stack/0.0.1/yet-another-java-web-stack-0.0.1.war webapps/
+
+Pour tester, vous pouvez accéder à: [http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/]. Le titre doit être anagram kata !!!
+
+### [`git checkout step-10-deployed`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-10-deployed)
+
+## Conclusion
+
+On a accompli notre mission. On a réalisée une fonctionnalité testée et on est déjà partit en production (!) avec un haut niveau d'automatisation. 
+
+Les prochains épisodes présenteront le site REST dynamique en java et le site statique avec Angular JS. Stay tuned, et merci pour votre attention !
