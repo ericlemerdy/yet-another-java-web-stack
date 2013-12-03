@@ -3,13 +3,12 @@ Yet Another Java Web Stack
 
 ## Motivations
 
-Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article, je développe un site qui
-permet de voir le résultat d'un kata bien connu, le
-[kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
+Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, je développe un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
 
 ## Architecture cible
 
 * Partie cliente "statique"
+   * Tests avec FluentLenium
    * AngularJS
    * Yeoman (scafolding)
    * Bower (dépendences)
@@ -17,11 +16,14 @@ permet de voir le résultat d'un kata bien connu, le
 * Partie serveur "dynamique"
    * Java Jersey
 
+* Déploiement continu
+   * Infrastructure-as-code avec Puppet
+
 ## Testons un site web
 
-On commence par écrire un test qui se connecte à un serveur web et vérifie qu'on affiche le titre de la page: `anagram
-kata`. Pour ça, j'utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur
-[Selenium](http://docs.seleniumhq.org/)
+Il faut toujours commencer par un test !
+
+On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifie qu'on affiche le titre de la page: `anagram kata`. On utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/)
 
 ### [`git checkout step-1-fail-ui-test`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-1-fail-ui-test)
 
@@ -87,8 +89,7 @@ Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
     </html>
 
 Vous avez peut-être remarqué que le démarrage de Firefox par Selenuim rend le test assez long à éxécuter. Pour
-accélérer le passage du test, nous allons utiliser le navigateur sans interface PhantomJS. C'est ghostdriver qui se
-charge de déclarer PhantomJS comme WebDriver à Selenium.
+accélérer le passage du test, nous allons utiliser le navigateur sans interface [PhantomJS](http://phantomjs.org/). C'est [ghostdriver](https://github.com/detro/ghostdriver) qui se charge de déclarer PhantomJS comme WebDriver à Selenium.
 
     <dependency>
         <groupId>com.github.detro.ghostdriver</groupId>
