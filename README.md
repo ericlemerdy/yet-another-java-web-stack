@@ -144,3 +144,18 @@ pour que les utilisateurs puissent bénéficier de ses fonctionnalités.
 
 ## Mise en production
 
+### Release
+
+Après avoir déplacé le projet java dans son propre répertoire, on release la version :
+
+    cd java/
+    mvn versions:set -DnewVersion=0.0.1
+    mvn versions:commit
+    mvn clean install
+
+La version est installée dans `~/.m2/repository/name/lemerdy/eric/yet-another-java-web-stack/0.0.1/yet-another-java-web-stack-0.0.1.war`. On passe en version suivante:
+
+    mvn versions:set -DnewVersion=0.0.2-SNAPSHOT
+    mvn versions:commit
+
+### [`git checkout step-7-release-0.0.1](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-7-release-0.0.1)
