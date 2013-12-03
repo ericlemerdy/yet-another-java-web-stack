@@ -158,4 +158,37 @@ La version est installée dans `~/.m2/repository/name/lemerdy/eric/yet-another-j
     mvn versions:set -DnewVersion=0.0.2-SNAPSHOT
     mvn versions:commit
 
-### [`git checkout step-7-release-0.0.1](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-7-release-0.0.1)
+### [`git checkout step-7-release-0.0.1`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-7-release-0.0.1)
+
+
+### Provisionning
+
+Notre prochain but est de disposer d'une plate-forme pour déployer notre application web.
+
+On va utiliser [Vagrant](https://www.vagrantup.com) pour fournir la machine virtuelle et [Puppet](https://puppetlabs.com) pour la configurer.
+
+Créez un répertoire `platform` et initialisez une machine virtuelle Vagrant:
+
+    mkdir platform
+    cd platform/
+    vagrant init
+
+Cette machine virtuelle utilisera la box Vagrant de base. On configure aussi une IP statique pour plus de simplicité.
+
+`/platform/Vagrantfile`:
+
+    VAGRANTFILE_API_VERSION = "2"
+
+    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+      config.vm.box = "base"
+      config.vm.network :private_network, ip: "10.10.10.2"
+    end
+
+Vous pouvez démarrer la machine et vous y connecter avec les commandes suivantes :
+
+    vagrant up
+    vagrant ssh
+
+Pour la stopper, il suffit de taper: `vagrant halt`
+
+### [`git checkout step-8-vagrant-base`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-8-vagrant-base)
