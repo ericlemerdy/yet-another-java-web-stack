@@ -192,3 +192,44 @@ Vous pouvez démarrer la machine et vous y connecter avec les commandes suivante
 Pour la stopper, il suffit de taper: `vagrant halt`
 
 ### [`git checkout step-8-vagrant-base`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-8-vagrant-base)
+
+Maintenant qu'on a une "machine", il faut installer le "middleware"... Enfin, il faut installer Tomcat quoi. À l'ancienne, il suffirait de faire:
+
+    sudo apt-get install tomcat7
+
+Mais on va aussi automatiser cette partie pour pouvoir partir de la feuille blanche dès qu'on aura envie de tout nettoyer. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:
+
+    platform/
+      Vagrantfile    # Le fichier Vagrant créé précedemment
+      manifests/     # Le répertoire par défaut contenant les fichiers puppet.
+        default.pp   # Le fichier puppet par défaut qui contient la configuration à appliquer.
+
+Pour déclarer qu'on a besoin de Tomcat7, voici le contenu de `/platform/manifests/default.pp`:
+
+    exec { "apt-get update":
+      command => "/usr/bin/apt-get update",
+    }
+
+    package { "tomcat7":                      # Le package tomcat7 doit être
+      ensure  => "installed",                 # installé.
+      require => exec [ "apt-get update" ],   # On doit mettre à jour la
+    }                                         # définitions des packets avant.
+
+Pour appliquer cette configuration, il faut déclarer à Vagrant qu'on souhaite provisionner la machine avec Puppet:
+
+`/platform/Vagrantfile`:
+
+    (...)
+    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+      (...)
+      config.vm.provision "puppet" do |puppet|
+        puppet.options = "--verbose --debug"
+      end
+    end
+
+Notez qu'on se permet de passer Puppet en Verbose pour bien comprendre ce qu'il va faire sur la plate-forme.
+
+Pour appliquer cette configuration, il faut taper la commande `vagrant provision`. Si tout se passe correctement, vous pouvez accéder à: [http://10.10.10.2:8080/]. Ça doit montrer la page "It works" par défaut de Tomcat.
+
+### Déploiement
+
