@@ -229,7 +229,7 @@ Pour appliquer cette configuration, il faut déclarer à Vagrant qu'on souhaite 
 
 Notez qu'on se permet de passer Puppet en Verbose pour bien comprendre ce qu'il va faire sur la plate-forme.
 
-Pour appliquer cette configuration, il faut taper la commande `vagrant provision`. Si tout se passe correctement, vous pouvez accéder à: [http://10.10.10.2:8080/]. Ça doit montrer la page "It works" par défaut de Tomcat.
+Pour appliquer cette configuration, il faut taper la commande `vagrant provision`. Si tout se passe correctement, vous pouvez accéder à: [http://10.10.10.2:8080/](http://10.10.10.2:8080/). Ça doit montrer la page "It works" par défaut de Tomcat.
 
 ### [`git checkout step-9-provisionned-with-puppet`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-9-provisionned-with-puppet)
 
@@ -251,7 +251,7 @@ Et copier le livrable dedans:
 
     cp ~/.m2/repository/name/lemerdy/eric/yet-another-java-web-stack/0.0.1/yet-another-java-web-stack-0.0.1.war webapps/
 
-Pour tester, vous pouvez accéder à: [http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/]. Le titre doit être anagram kata !!!
+Pour tester, vous pouvez accéder à: [http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/](http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/). Le titre doit être anagram kata !!!
 
 ### [`git checkout step-10-deployed`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-10-deployed)
 
