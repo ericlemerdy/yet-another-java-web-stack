@@ -3,7 +3,9 @@ Yet Another Java Web Stack
 
 ## Motivations
 
-Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, je développe un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
+Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, vous verrez se développer un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
+
+Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque tag intermédiaire sur ce dépôt.
 
 ## Architecture cible
 
@@ -23,9 +25,44 @@ Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Da
 
 Il faut toujours commencer par un test !
 
-On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifie qu'on affiche le titre de la page: `anagram kata`. On utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/)
+On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: `anagram kata`. On utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/)
 
-### [`git checkout step-1-fail-ui-test`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-1-fail-ui-test)
+La dépendance maven au framework:
+
+    <dependency>
+        <groupId>org.fluentlenium</groupId>
+        <artifactId>fluentlenium-core</artifactId>
+        <version>0.9.1</version>
+        <scope>test</scope>
+    </dependency>
+    
+Ainsi que l'adapteur fest-assert pour rendre les assertions encore plus lisibles:
+
+    <dependency>
+        <groupId>org.fluentlenium</groupId>
+        <artifactId>fluentlenium-festassert</artifactId>
+        <version>0.9.1</version>
+        <scope>test</scope>
+    </dependency>
+
+Voici le test:
+
+    package ui;
+    
+    import org.fluentlenium.adapter.FluentTest;
+    import org.junit.Test;
+    
+    import static org.fest.assertions.Assertions.assertThat;
+    
+    public class AnagramKataPageTest extends FluentTest {
+        @Test
+        public void title_of_site_should_contain_the_kata_name() {
+            goTo("http://localhost:8080");
+            assertThat(title()).contains("Anagram Kata");
+        }
+    }
+
+> [`git checkout step-1-fail-ui-test`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-1-fail-ui-test)
 
 Tests: `mvn clean install`
 
@@ -70,7 +107,7 @@ On ajoute la rule au test :
     @Rule
     public JettyServerRule server = new JettyServerRule();
 
-### [`git checkout step-2-start-test-web-server`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-2-start-test-web-server)
+> [`git checkout step-2-start-test-web-server`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-2-start-test-web-server)
 
 Le message d'erreur change :
 
@@ -78,7 +115,7 @@ Le message d'erreur change :
 
 Le serveur Jetty embarqué se met donc à servir le contenu statique de `/src/main/webapp`.
 
-### [`git checkout step-3-test-pass`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-3-test-pass)
+> [`git checkout step-3-test-pass`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-3-test-pass)
 
 Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
 
@@ -97,7 +134,7 @@ accélérer le passage du test, nous allons utiliser le navigateur sans interfac
         <version>1.0.3</version>
     </dependency>
 
-### [`git checkout step-4-using-phantomjs`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-4-using-phantomjs)
+> [`git checkout step-4-using-phantomjs`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-4-using-phantomjs)
 
 En repassant les tests, on s'apperçoit que quelque-chose manque:
 
@@ -124,7 +161,7 @@ Autant s'outiller tout de suite, utilisons du code provenant d'un [gist](https:/
         return driver;
     }
 
-### [`git checkout step-5-download-phantom-js`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-5-download-phantom-js)
+> [`git checkout step-5-download-phantom-js`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-5-download-phantom-js)
 
 Ça passe et on ne voit plus de firefox qui démarre l'interface lors du passage des tests !
 
@@ -135,7 +172,7 @@ En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
         setSnapshotPath(new File("target", "snapshots").getAbsolutePath());
     }
 
-### [`git checkout step-6-snapshot-on-error`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-6-snapshot-on-error)
+> [`git checkout step-6-snapshot-on-error`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-6-snapshot-on-error)
 
 Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire le scénario soit-même dans son
 navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
@@ -159,7 +196,7 @@ La version est installée dans `~/.m2/repository/name/lemerdy/eric/yet-another-j
     mvn versions:set -DnewVersion=0.0.2-SNAPSHOT
     mvn versions:commit
 
-### [`git checkout step-7-release-0.0.1`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-7-release-0.0.1)
+> [`git checkout step-7-release-0.0.1`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-7-release-0.0.1)
 
 
 ### Provisionning
@@ -192,7 +229,7 @@ Vous pouvez démarrer la machine et vous y connecter avec les commandes suivante
 
 Pour la stopper, il suffit de taper: `vagrant halt`
 
-### [`git checkout step-8-vagrant-base`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-8-vagrant-base)
+> [`git checkout step-8-vagrant-base`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-8-vagrant-base)
 
 Maintenant qu'on a une "machine", il faut installer le "middleware"... Enfin, il faut installer Tomcat quoi. À l'ancienne, il suffirait de faire:
 
@@ -232,7 +269,7 @@ Notez qu'on se permet de passer Puppet en Verbose pour bien comprendre ce qu'il 
 
 Pour appliquer cette configuration, il faut taper la commande `vagrant provision`. Si tout se passe correctement, vous pouvez accéder à: [http://10.10.10.2:8080/](http://10.10.10.2:8080/). Ça doit montrer la page "It works" par défaut de Tomcat.
 
-### [`git checkout step-9-provisionned-with-puppet`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-9-provisionned-with-puppet)
+> [`git checkout step-9-provisionned-with-puppet`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-9-provisionned-with-puppet)
 
 ### Déploiement
 
@@ -254,7 +291,7 @@ Et copier le livrable dedans:
 
 Pour tester, vous pouvez accéder à: [http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/](http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/). Le titre doit être anagram kata !!!
 
-### [`git checkout step-10-deployed`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-10-deployed)
+> [`git checkout step-10-deployed`](https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-10-deployed)
 
 ## Conclusion
 
