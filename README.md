@@ -26,9 +26,9 @@ Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaqu
 
 Il faut toujours commencer par un test !
 
-On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: `anagram kata`. On utilise le framework [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/)
+On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: `anagram kata`. On utilise l'outil [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/). Ce couple d'outils permet d'éxécuter un scénario de navigation sur un site web et de faire des vérifications au cours de cette navigation.
 
-La dépendance maven au framework:
+La dépendance maven pour FluentLenium:
 
     <dependency>
         <groupId>org.fluentlenium</groupId>
@@ -37,7 +37,7 @@ La dépendance maven au framework:
         <scope>test</scope>
     </dependency>
     
-Ainsi que l'adapteur fest-assert pour rendre les assertions encore plus lisibles:
+Ainsi que l'adapteur pour [fest-assert](http://fest.easytesting.org/) afin rendre les assertions encore plus lisibles:
 
     <dependency>
         <groupId>org.fluentlenium</groupId>
@@ -72,7 +72,7 @@ Résultat: `Failed tests:   title_of_site_should_contain_the_kata_name(ui.Anagra
 C'est normal puisque aucun serveur n'est démarré sur `localhost:8080`. Pour faire passer le test, il faut donc déployer
 un serveur web et servir une page dont le titre est 'Anagram kata'.
 
-Une JUnit Rule démarre le serveur Jetty embarqué pour servir du contenu statique :
+Voici une "rule" avec JUnit qui démarre le serveur Jetty embarqué pour servir du contenu statique :
 
     package util;
 
@@ -103,7 +103,7 @@ Une JUnit Rule démarre le serveur Jetty embarqué pour servir du contenu statiq
         }
     }
 
-On ajoute la rule au test :
+On ajoute la "rule" au test :
 
     @Rule
     public JettyServerRule server = new JettyServerRule();
@@ -126,8 +126,8 @@ Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
     </head>
     </html>
 
-Vous avez peut-être remarqué que le démarrage de Firefox par Selenuim rend le test assez long à éxécuter. Pour
-accélérer le passage du test, nous allons utiliser le navigateur sans interface [PhantomJS](http://phantomjs.org/). C'est [ghostdriver](https://github.com/detro/ghostdriver) qui se charge de déclarer PhantomJS comme WebDriver à Selenium.
+Vous avez peut-être remarqué que le démarrage de Firefox par Selenium rend le test assez long à éxécuter. Pour
+accélérer le passage du test, nous allons utiliser un navigateur sans interface: [PhantomJS](http://phantomjs.org/). C'est [ghostdriver](https://github.com/detro/ghostdriver) qui se charge de déclarer PhantomJS comme WebDriver pour Selenium.
 
     <dependency>
         <groupId>com.github.detro.ghostdriver</groupId>
@@ -175,8 +175,7 @@ En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
 
 > [`git checkout step-6-snapshot-on-error`](https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-5-download-phantom-js...step-6-snapshot-on-error)
 
-Un autre avantage est de pouvoir poser un point d'arrêt dans les tests et faire le scénario soit-même dans son
-navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
+Un autre avantage est de pouvoir poser un point d'arrêt dans les tests afin de stopper l'éxécution du scénario automatisé. On peut ensuite réaliser manuellement les étapes du scénario soit-même dans son navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
 
 Ça y est, on a un site qui fonctionne. La prochaine chose à faire est naturellement de mettre le site en production
 pour que les utilisateurs puissent bénéficier de ces fonctionnalités incroyables !
@@ -202,9 +201,9 @@ La version est installée dans `~/.m2/repository/name/lemerdy/eric/yet-another-j
 
 ### Provisionning
 
-Notre prochain but est de disposer d'une plate-forme pour déployer notre application web.
+Notre prochain but est de disposer d'une plate-forme pour déployer cette page web.
 
-On va utiliser [Vagrant](https://www.vagrantup.com) pour fournir la machine virtuelle et [Puppet](https://puppetlabs.com) pour la configurer.
+On va utiliser [Vagrant](https://www.vagrantup.com) pour fournir la machine virtuelle et [Puppet](https://puppetlabs.com) pour la configurer. Vagrant permet de piloter votre outil de virtualisation en ligne de commande. VirtualBox est l'outil par défaut mais vous pouvez aussi utiliser VMWare.
 
 Créez un répertoire `platform` et initialisez une machine virtuelle Vagrant:
 
@@ -232,11 +231,11 @@ Pour la stopper, il suffit de taper: `vagrant halt`
 
 > [`git checkout step-8-vagrant-base`](https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-7-release-0.0.1...step-8-vagrant-base)
 
-Maintenant qu'on a une "machine", il faut installer le "middleware"... Enfin, il faut installer Tomcat quoi. À l'ancienne, il suffirait de faire:
+Maintenant qu'on a une "machine", il faut installer le "middleware"... Enfin, il faut installer Tomcat, quoi. À l'ancienne, il suffirait de faire:
 
     sudo apt-get install tomcat7
 
-Mais on va aussi automatiser cette partie pour pouvoir partir de la feuille blanche dès qu'on aura envie de tout nettoyer. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:
+Mais on va aussi automatiser cette partie. Celà permet de maitriser complètement la plate-forme de production puisque qu'on peut la recontruire de façon automatisée à tout instant. L'automatisation étant le sommum de la documentation. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:
 
     platform/
       Vagrantfile    # Le fichier Vagrant créé précedemment
@@ -274,7 +273,7 @@ Pour appliquer cette configuration, il faut taper la commande `vagrant provision
 
 ### Déploiement
 
-Il ne reste plus qu'à déployer ! Pour celà, on pourrait faire compliquer. Pour changer, on va faire simple. On va se contenter de créer un répertoire synchronisé avec la machine virtuelle :
+Il ne reste plus qu'à déployer ! Pour celà, on pourrait faire compliqué. Pour changer, on va faire simple ;-). On va se contenter de créer un répertoire synchronisé avec la machine virtuelle :
 
 
 `/platform/Vagrantfile`:
@@ -296,6 +295,6 @@ Pour tester, vous pouvez accéder à: [http://10.10.10.2:8080/yet-another-java-w
 
 ## Conclusion
 
-On a accompli notre mission. On a réalisé une fonctionnalité testée et on est déjà partit en production (!) avec un haut niveau d'automatisation. 
+On a accompli notre mission. On a réalisé une fonctionnalité testée et on est déjà partis en production (!) avec un haut niveau d'automatisation. 
 
 Les prochains épisodes présenteront le site REST dynamique en java et le site statique avec Angular JS. Stay tuned, et merci pour votre attention !
