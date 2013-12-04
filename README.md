@@ -5,7 +5,7 @@ Yet Another Java Web Stack
 
 Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, vous verrez se développer un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html).
 
-Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque tag intermédiaire.
+Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque étape intermédiaire à l'aide des tags git.
 
 ## Cible
 
@@ -13,7 +13,7 @@ Je dirais que je veux mettre java là où il est bon, c'est-à-dire au backend !
 
 Résumons : 
 * des services REST stateless en java avec une base non-relationnelle si possible
-* des resources statiques avec un cache bien configuré pour servir une application javascript motorisé par un MVC côté
+* des ressources statiques avec un cache bien configuré pour servir une application javascript motorisé par un MVC côté
 
 On obtient de la cohérence je trouve et un bon contrôle pour l'hébergement en test, dev, intégration et production.
 
@@ -21,7 +21,7 @@ On obtient de la cohérence je trouve et un bon contrôle pour l'hébergement en
    * Outil: Tests avec FluentLenium
    * Framework: AngularJS
    * Outil: Yeoman (scafolding)
-   * Outil: Bower (dépendences)
+   * Outil: Bower (dépendances)
 
 * Partie serveur "dynamique" en java
    * Framework: Jersey
@@ -34,7 +34,7 @@ On obtient de la cohérence je trouve et un bon contrôle pour l'hébergement en
 
 Il faut toujours commencer par un test !
 
-On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: `anagram kata`. On utilise l'outil [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/). Ce couple d'outils permet d'éxécuter un scénario de navigation sur un site web et de faire des vérifications au cours de cette navigation.
+On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: `anagram kata`. On utilise l'outil [FluentLenium](http://www.fluentlenium.org/) qui repose sur [Selenium](http://docs.seleniumhq.org/). Ce couple d'outils permet d'exécuter un scénario de navigation sur un site web et de faire des vérifications au cours de cette navigation.
 
 La dépendance maven pour FluentLenium:
 
@@ -134,8 +134,7 @@ Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :
     </head>
     </html>
 
-Vous avez peut-être remarqué que le démarrage de Firefox par Selenium rend le test assez long à éxécuter. Pour
-accélérer le passage du test, nous allons utiliser un navigateur sans interface: [PhantomJS](http://phantomjs.org/). C'est [ghostdriver](https://github.com/detro/ghostdriver) qui se charge de déclarer PhantomJS comme WebDriver pour Selenium.
+Vous avez peut-être remarqué que le démarrage de Firefox par Selenium rend le test assez long à exécuter. Pour accélérer le passage du test, nous allons utiliser un navigateur sans interface: [PhantomJS](http://phantomjs.org/). C'est [ghostdriver](https://github.com/detro/ghostdriver) qui se charge de déclarer PhantomJS comme WebDriver pour Selenium.
 
     <dependency>
         <groupId>com.github.detro.ghostdriver</groupId>
@@ -145,7 +144,7 @@ accélérer le passage du test, nous allons utiliser un navigateur sans interfac
 
 > [`git checkout step-4-using-phantomjs`](https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-3-test-pass...step-4-using-phantomjs)
 
-En repassant les tests, on s'apperçoit que quelque-chose manque:
+En repassant les tests, on s'aperçoit que quelque-chose manque:
 
     java.lang.IllegalStateException: The path to the driver executable must be set by the phantomjs.binary.path capability/system property/PATH variable; for more information, see https://github.com/ariya/phantomjs/wiki. The latest version can be downloaded from http://phantomjs.org/download.html
         at com.google.common.base.Preconditions.checkState(Preconditions.java:176)
@@ -156,7 +155,7 @@ En repassant les tests, on s'apperçoit que quelque-chose manque:
         at util.PhantomJsTest.getDefaultDriver(PhantomJsTest.java:19)
         at org.fluentlenium.adapter.FluentTest.initFluentFromDefaultDriver(FluentTest.java:123)
 
-Il manque l'éxécutable de PhantomJS. Il faut le télécharger !
+Il manque l'exécutable de PhantomJS. Il faut le télécharger !
 
 Autant s'outiller tout de suite, utilisons du code provenant d'un [gist](https://gist.github.com/dgageot/4957186) pour
 ça et intégrons-le dans la classe PhantomJsTest:
@@ -172,7 +171,7 @@ Autant s'outiller tout de suite, utilisons du code provenant d'un [gist](https:/
 
 > [`git checkout step-5-download-phantom-js`](https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-4-using-phantomjs...step-5-download-phantom-js)
 
-Ça passe et on ne voit plus de firefox qui démarre l'interface lors du passage des tests !
+Ça passe et on ne voit plus de Firefox qui démarre l'interface lors du passage des tests !
 
 En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
 
@@ -183,7 +182,7 @@ En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.
 
 > [`git checkout step-6-snapshot-on-error`](https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-5-download-phantom-js...step-6-snapshot-on-error)
 
-Un autre avantage est de pouvoir poser un point d'arrêt dans les tests afin de stopper l'éxécution du scénario automatisé. On peut ensuite réaliser manuellement les étapes du scénario soit-même dans son navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
+Un autre avantage est de pouvoir poser un point d'arrêt dans les tests afin de stopper l'exécution du scénario automatisé. On peut ensuite réaliser manuellement les étapes du scénario soit-même dans son navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.
 
 Ça y est, on a un site qui fonctionne. La prochaine chose à faire est naturellement de mettre le site en production
 pour que les utilisateurs puissent bénéficier de ces fonctionnalités incroyables !
@@ -243,10 +242,10 @@ Maintenant qu'on a une "machine", il faut installer le "middleware"... Enfin, il
 
     sudo apt-get install tomcat7
 
-Mais on va aussi automatiser cette partie. Celà permet de maitriser complètement la plate-forme de production puisque qu'on peut la recontruire de façon automatisée à tout instant. L'automatisation étant le sommum de la documentation. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:
+Mais on va aussi automatiser cette partie. Cela permet de maîtriser complètement la plate-forme de production puisque qu'on peut la reconstruire de façon automatisée à tout instant. L'automatisation étant le summum de la documentation. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:
 
     platform/
-      Vagrantfile    # Le fichier Vagrant créé précedemment
+      Vagrantfile    # Le fichier Vagrant créé précédemment
       manifests/     # Le répertoire par défaut contenant les fichiers puppet.
         default.pp   # Le fichier puppet par défaut qui contient la configuration à appliquer.
 
