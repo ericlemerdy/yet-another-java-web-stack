@@ -7,19 +7,20 @@ Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Da
 
 Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque tag intermédiaire sur ce dépôt.
 
-## Architecture cible
+## Cible
 
 * Partie cliente "statique"
-   * Tests avec FluentLenium
-   * AngularJS
-   * Yeoman (scafolding)
-   * Bower (dépendences)
+   * Outil: Tests avec FluentLenium
+   * Framework: AngularJS
+   * Outil: Yeoman (scafolding)
+   * Outil: Bower (dépendences)
 
-* Partie serveur "dynamique"
-   * Java Jersey
+* Partie serveur "dynamique" en java
+   * Framework: Jersey
+   * Outil: build maven
 
 * Déploiement continu
-   * Infrastructure-as-code avec Puppet
+   * Outil: Infrastructure-as-code avec Puppet
 
 ## Testons un site web
 
