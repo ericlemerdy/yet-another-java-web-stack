@@ -3,11 +3,19 @@ Yet Another Java Web Stack
 
 ## Motivations
 
-Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, vous verrez se développer un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html)
+Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, vous verrez se développer un site qui permet de voir le résultat d'un kata bien connu, le [kata anagram](http://codekata.pragprog.com/2007/01/kata_six_anagra.html).
 
-Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque tag intermédiaire sur ce dépôt.
+Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque tag intermédiaire.
 
 ## Cible
+
+Je dirais que je veux mettre java là où il est bon, c'est-à-dire au backend ! C'est donc avec un plaisir non dissimulé que j'ai découvert l'architecture web de UrbanDive en 2010 : un frontal en javascript (et fallback php pour les moteurs de recherche) et des **services** en backend en java le tout, supporté par la scalabilité d'une base de donnée non-relationnelle : mongodb pour ne pas la citer. Il y avait aussi un "service" d'images reposant intégralement sur du stockage S3. J'ai aussi découvert un type d'outil très puissant : le reverse proxy (comme Varnish par exemple). En amont du serveur web, il permet de configurer les flux http nécessaires à servir votre site.
+
+Résumons : 
+* des services REST stateless en java avec une base non-relationnelle si possible
+* des resources statiques avec un cache bien configuré pour servir une application javascript motorisé par un MVC côté
+
+On obtient de la cohérence je trouve et un bon contrôle pour l'hébergement en test, dev, intégration et production.
 
 * Partie cliente "statique"
    * Outil: Tests avec FluentLenium
