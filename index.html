@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+<link rel="stylesheet" href="index.css" />
+</head>
+<body>
+<h1 id="yet-another-java-web-stack">Yet Another Java Web Stack</h1>
+<h2 id="motivations">Motivations</h2>
+<p>Qui n'a pas eu besoin d'un projet vide pour démarrer un nouveau projet web ? Dans cet article et les suivants, vous verrez se développer un site qui permet de voir le résultat d'un kata bien connu, le <a href="http://codekata.pragprog.com/2007/01/kata_six_anagra.html">kata anagram</a>.</p>
+<p>Vous pouvez vous essayer à chaque étape et voir la solution en regardant chaque étape intermédiaire à l'aide des tags git.</p>
+<h2 id="cible">Cible</h2>
+<p>Je dirais que je veux mettre java là où il est bon, c'est-à-dire au backend ! C'est donc avec un plaisir non dissimulé que j'ai découvert l'architecture web de UrbanDive en 2010 : un frontal en javascript (et fallback php pour les moteurs de recherche) et des <strong>services</strong> en backend en java le tout, supporté par la scalabilité d'une base de donnée non-relationnelle : mongodb pour ne pas la citer. Il y avait aussi un &quot;service&quot; d'images reposant intégralement sur du stockage S3. J'ai aussi découvert un type d'outil très puissant : le reverse proxy (comme Varnish par exemple). En amont du serveur web, il permet de configurer les flux http nécessaires à servir votre site.</p>
+<p>Résumons : * des services REST stateless en java avec une base non-relationnelle si possible * des ressources statiques avec un cache bien configuré pour servir une application javascript motorisé par un MVC côté</p>
+<p>On obtient de la cohérence je trouve et un bon contrôle pour l'hébergement en test, dev, intégration et production.</p>
+<ul>
+<li>Partie cliente &quot;statique&quot;</li>
+<li>Outil: Tests avec FluentLenium</li>
+<li>Framework: AngularJS</li>
+<li>Outil: Yeoman (scafolding)</li>
+<li><p>Outil: Bower (dépendances)</p></li>
+<li>Partie serveur &quot;dynamique&quot; en java</li>
+<li>Framework: Jersey</li>
+<li><p>Outil: build maven</p></li>
+<li>Déploiement continu</li>
+<li><p>Outil: Infrastructure-as-code avec Puppet</p></li>
+</ul>
+<h2 id="testons-un-site-web">Testons un site web</h2>
+<p>Il faut toujours commencer par un test !</p>
+<p>On commence donc en cherchant à valider le titre de la page. Il faut donc se connecter à un serveur web et vérifier qu'on affiche le titre de la page: <code>anagram kata</code>. On utilise l'outil <a href="http://www.fluentlenium.org/">FluentLenium</a> qui repose sur <a href="http://docs.seleniumhq.org/">Selenium</a>. Ce couple d'outils permet d'exécuter un scénario de navigation sur un site web et de faire des vérifications au cours de cette navigation.</p>
+<p>La dépendance maven pour FluentLenium:</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.fluentlenium&lt;/groupId&gt;
+    &lt;artifactId&gt;fluentlenium-core&lt;/artifactId&gt;
+    &lt;version&gt;0.9.1&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+<p>Ainsi que l'adapteur pour <a href="http://fest.easytesting.org/">fest-assert</a> afin rendre les assertions encore plus lisibles:</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.fluentlenium&lt;/groupId&gt;
+    &lt;artifactId&gt;fluentlenium-festassert&lt;/artifactId&gt;
+    &lt;version&gt;0.9.1&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+<p>Voici le test:</p>
+<pre><code>package ui;
+
+import org.fluentlenium.adapter.FluentTest;
+import org.junit.Test;
+
+import static org.fest.assertions.Assertions.assertThat;
+
+public class AnagramKataPageTest extends FluentTest {
+    @Test
+    public void title_of_site_should_contain_the_kata_name() {
+        goTo(&quot;http://localhost:8080&quot;);
+        assertThat(title()).contains(&quot;Anagram Kata&quot;);
+    }
+}</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/tree/step-1-fail-ui-test"><code>git checkout step-1-fail-ui-test</code></a></p>
+</blockquote>
+<p>Tests: <code>mvn clean install</code></p>
+<p>Résultat: <code>Failed tests:   title_of_site_should_contain_the_kata_name(ui.AnagramKataPageTest): &lt;'Erreur de chargement de la page'&gt; should contain the String:&lt;'Anagram Kata'&gt;</code></p>
+<p>C'est normal puisque aucun serveur n'est démarré sur <code>localhost:8080</code>. Pour faire passer le test, il faut donc déployer un serveur web et servir une page dont le titre est 'Anagram kata'.</p>
+<p>Voici une &quot;rule&quot; avec JUnit qui démarre le serveur Jetty embarqué pour servir du contenu statique :</p>
+<pre><code>package util;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.junit.rules.ExternalResource;
+
+public class JettyServerRule extends ExternalResource {
+
+    private Server server;
+
+    @Override
+    protected void before() throws Throwable {
+        server = new Server(8080);
+        server.setHandler(new WebAppContext(server, &quot;src/main/webapp/&quot;, &quot;/&quot;));
+        server.start();
+    }
+
+    @Override
+    protected void after() {
+        try {
+            server.stop();
+        } catch (Exception e) {
+            System.err.println(&quot;Unable to stop test server&quot;);
+        }
+    }
+}</code></pre>
+<p>On ajoute la &quot;rule&quot; au test :</p>
+<pre><code>@Rule
+public JettyServerRule server = new JettyServerRule();</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-1-fail-ui-test...step-2-start-test-web-server"><code>git checkout step-2-start-test-web-server</code></a></p>
+</blockquote>
+<p>Le message d'erreur change :</p>
+<p><code>java.lang.AssertionError: &lt;'Directory: /'&gt; should contain the String:&lt;'Anagram Kata'&gt;</code></p>
+<p>Le serveur Jetty embarqué se met donc à servir le contenu statique de <code>/src/main/webapp</code>.</p>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-2-start-test-web-server...step-3-test-pass"><code>git checkout step-3-test-pass</code></a></p>
+</blockquote>
+<p>Il suffit maintenant d'ajouter un bon fichier html qui fait passer le test :</p>
+<pre><code>&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Anagram Kata&lt;/title&gt;
+&lt;/head&gt;
+&lt;/html&gt;</code></pre>
+<p>Vous avez peut-être remarqué que le démarrage de Firefox par Selenium rend le test assez long à exécuter. Pour accélérer le passage du test, nous allons utiliser un navigateur sans interface: <a href="http://phantomjs.org/">PhantomJS</a>. C'est <a href="https://github.com/detro/ghostdriver">ghostdriver</a> qui se charge de déclarer PhantomJS comme WebDriver pour Selenium.</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;com.github.detro.ghostdriver&lt;/groupId&gt;
+    &lt;artifactId&gt;phantomjsdriver&lt;/artifactId&gt;
+    &lt;version&gt;1.0.3&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-3-test-pass...step-4-using-phantomjs"><code>git checkout step-4-using-phantomjs</code></a></p>
+</blockquote>
+<p>En repassant les tests, on s'aperçoit que quelque-chose manque:</p>
+<pre><code>java.lang.IllegalStateException: The path to the driver executable must be set by the phantomjs.binary.path capability/system property/PATH variable; for more information, see https://github.com/ariya/phantomjs/wiki. The latest version can be downloaded from http://phantomjs.org/download.html
+    at com.google.common.base.Preconditions.checkState(Preconditions.java:176)
+    at org.openqa.selenium.phantomjs.PhantomJSDriverService.findPhantomJS(PhantomJSDriverService.java:237)
+    at org.openqa.selenium.phantomjs.PhantomJSDriverService.createDefaultService(PhantomJSDriverService.java:182)
+    at org.openqa.selenium.phantomjs.PhantomJSDriver.&lt;init&gt;(PhantomJSDriver.java:96)
+    at org.openqa.selenium.phantomjs.PhantomJSDriver.&lt;init&gt;(PhantomJSDriver.java:86)
+    at util.PhantomJsTest.getDefaultDriver(PhantomJsTest.java:19)
+    at org.fluentlenium.adapter.FluentTest.initFluentFromDefaultDriver(FluentTest.java:123)</code></pre>
+<p>Il manque l'exécutable de PhantomJS. Il faut le télécharger !</p>
+<p>Autant s'outiller tout de suite, utilisons du code provenant d'un <a href="https://gist.github.com/dgageot/4957186">gist</a> pour ça et intégrons-le dans la classe PhantomJsTest:</p>
+<pre><code>public WebDriver getDefaultDriver() {
+    File phantomJsExe = new PhantomJsDownloader().downloadAndExtract();
+    DesiredCapabilities capabilities = new DesiredCapabilities(of(PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
+            phantomJsExe.getAbsolutePath()));
+    WebDriver driver = new PhantomJSDriver(capabilities);
+    driver.manage().window().setSize(DEFAULT_WINDOW_SIZE);
+    return driver;
+}</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-4-using-phantomjs...step-5-download-phantom-js"><code>git checkout step-5-download-phantom-js</code></a></p>
+</blockquote>
+<p>Ça passe et on ne voit plus de Firefox qui démarre l'interface lors du passage des tests !</p>
+<p>En cas d'erreurs, on active les captures d'écrans pour visualiser l'erreur.</p>
+<pre><code>public PhantomJsTest() {
+    setSnapshotMode(Mode.TAKE_SNAPSHOT_ON_FAIL);
+    setSnapshotPath(new File(&quot;target&quot;, &quot;snapshots&quot;).getAbsolutePath());
+}</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-5-download-phantom-js...step-6-snapshot-on-error"><code>git checkout step-6-snapshot-on-error</code></a></p>
+</blockquote>
+<p>Un autre avantage est de pouvoir poser un point d'arrêt dans les tests afin de stopper l'exécution du scénario automatisé. On peut ensuite réaliser manuellement les étapes du scénario soit-même dans son navigateur pour dissocier d'éventuels problèmes dans une classe de test et de vrais problèmes de l'application.</p>
+<p>Ça y est, on a un site qui fonctionne. La prochaine chose à faire est naturellement de mettre le site en production pour que les utilisateurs puissent bénéficier de ces fonctionnalités incroyables !</p>
+<h2 id="mise-en-production">Mise en production</h2>
+<h3 id="release">Release</h3>
+<p>Après avoir déplacé le projet java dans son propre répertoire, on release la version :</p>
+<pre><code>cd java/
+mvn versions:set -DnewVersion=0.0.1
+mvn versions:commit
+mvn clean install</code></pre>
+<p>La version est installée dans <code>~/.m2/repository/name/lemerdy/eric/yet-another-java-web-stack/0.0.1/yet-another-java-web-stack-0.0.1.war</code>. On passe en version suivante:</p>
+<pre><code>mvn versions:set -DnewVersion=0.0.2-SNAPSHOT
+mvn versions:commit</code></pre>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-6-snapshot-on-error...step-7-release-0.0.1"><code>git checkout step-7-release-0.0.1</code></a></p>
+</blockquote>
+<h3 id="provisionning">Provisionning</h3>
+<p>Notre prochain but est de disposer d'une plate-forme pour déployer cette page web.</p>
+<p>On va utiliser <a href="https://www.vagrantup.com">Vagrant</a> pour fournir la machine virtuelle et <a href="https://puppetlabs.com">Puppet</a> pour la configurer. Vagrant permet de piloter votre outil de virtualisation en ligne de commande. VirtualBox est l'outil par défaut mais vous pouvez aussi utiliser VMWare.</p>
+<p>Créez un répertoire <code>platform</code> et initialisez une machine virtuelle Vagrant:</p>
+<pre><code>mkdir platform
+cd platform/
+vagrant init</code></pre>
+<p>Cette machine virtuelle utilisera la box Vagrant de base. On configure aussi une IP statique pour plus de simplicité.</p>
+<p><code>/platform/Vagrantfile</code>:</p>
+<pre><code>VAGRANTFILE_API_VERSION = &quot;2&quot;
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = &quot;base&quot;
+  config.vm.network :private_network, ip: &quot;10.10.10.2&quot;
+end</code></pre>
+<p>Vous pouvez démarrer la machine et vous y connecter avec les commandes suivantes :</p>
+<pre><code>vagrant up
+vagrant ssh</code></pre>
+<p>Pour la stopper, il suffit de taper: <code>vagrant halt</code></p>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-7-release-0.0.1...step-8-vagrant-base"><code>git checkout step-8-vagrant-base</code></a></p>
+</blockquote>
+<p>Maintenant qu'on a une &quot;machine&quot;, il faut installer le &quot;middleware&quot;... Enfin, il faut installer Tomcat, quoi. À l'ancienne, il suffirait de faire:</p>
+<pre><code>sudo apt-get install tomcat7</code></pre>
+<p>Mais on va aussi automatiser cette partie. Cela permet de maîtriser complètement la plate-forme de production puisque qu'on peut la reconstruire de façon automatisée à tout instant. L'automatisation étant le summum de la documentation. C'est pourquoi on va utiliser Puppet. Grâce à l'intégration maligne de Vagrant et Puppet, on va juste fournir des fichiers de configuration de Puppet et la tâche de provisionning de Vagrant se chargera de lancer l'agent Puppet pour appliquer la configuration. Voici la structure standard à créer:</p>
+<pre><code>platform/
+  Vagrantfile    # Le fichier Vagrant créé précédemment
+  manifests/     # Le répertoire par défaut contenant les fichiers puppet.
+    default.pp   # Le fichier puppet par défaut qui contient la configuration à appliquer.</code></pre>
+<p>Pour déclarer qu'on a besoin de Tomcat7, voici le contenu de <code>/platform/manifests/default.pp</code>:</p>
+<pre><code>exec { &quot;apt-get update&quot;:
+  command =&gt; &quot;/usr/bin/apt-get update&quot;,
+}
+
+package { &quot;tomcat7&quot;:                      # Le package tomcat7 doit être
+  ensure  =&gt; &quot;installed&quot;,                 # installé.
+  require =&gt; exec [ &quot;apt-get update&quot; ],   # On doit mettre à jour la
+}                                         # définitions des packets avant.</code></pre>
+<p>Pour appliquer cette configuration, il faut déclarer à Vagrant qu'on souhaite provisionner la machine avec Puppet:</p>
+<p><code>/platform/Vagrantfile</code>:</p>
+<pre><code>(...)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  (...)
+  config.vm.provision &quot;puppet&quot; do |puppet|
+    puppet.options = &quot;--verbose --debug&quot;
+  end
+end</code></pre>
+<p>Notez qu'on se permet de passer Puppet en Verbose pour bien comprendre ce qu'il va faire sur la plate-forme.</p>
+<p>Pour appliquer cette configuration, il faut taper la commande <code>vagrant provision</code>. Si tout se passe correctement, vous pouvez accéder à: <a href="http://10.10.10.2:8080/">http://10.10.10.2:8080/</a>. Ça doit montrer la page &quot;It works&quot; par défaut de Tomcat.</p>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-8-vagrant-base...step-9-provisionned-with-puppet"><code>git checkout step-9-provisionned-with-puppet</code></a></p>
+</blockquote>
+<h3 id="déploiement">Déploiement</h3>
+<p>Il ne reste plus qu'à déployer ! Pour celà, on pourrait faire compliqué. Pour changer, on va faire simple ;-). On va se contenter de créer un répertoire synchronisé avec la machine virtuelle :</p>
+<p><code>/platform/Vagrantfile</code>:</p>
+<pre><code>(...)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  (...)
+  config.vm.synced_folder &quot;webapps/&quot;, &quot;/var/lib/tomcat7/webapps/&quot;
+  (...)
+end</code></pre>
+<p>Et copier le livrable dedans:</p>
+<pre><code>cp ~/.m2/repository/name/lemerdy/eric/yet-another-java-web-stack/0.0.1/yet-another-java-web-stack-0.0.1.war webapps/</code></pre>
+<p>Pour tester, vous pouvez accéder à: <a href="http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/">http://10.10.10.2:8080/yet-another-java-web-stack-0.0.1/</a>. Le titre doit être anagram kata !!!</p>
+<blockquote>
+<p><a href="https://github.com/ericlemerdy/yet-another-java-web-stack/compare/step-9-provisionned-with-puppet...step-10-deployed"><code>git checkout step-10-deployed</code></a></p>
+</blockquote>
+<h2 id="conclusion">Conclusion</h2>
+<p>On a accompli notre mission. On a réalisé une fonctionnalité testée et on est déjà partis en production (!) avec un haut niveau d'automatisation.</p>
+<p>Les prochains épisodes présenteront le site REST dynamique en java et le site statique avec Angular JS. Stay tuned, et merci pour votre attention !</p>
+</body>
+</html>
